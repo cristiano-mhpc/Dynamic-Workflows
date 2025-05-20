@@ -1,0 +1,12 @@
+
+dataset_name: "uciml/iris"
+
+clustering_techniques: [ "dbscan", "kmeans" ]
+
+normalization_techniques: [ "none", "ln_p1", "ln_pe" ]
+
+reduction_techniques: [ "none", "pca", "tsne" ]
+
+number_dimensions: 2
+
+seed: 42
