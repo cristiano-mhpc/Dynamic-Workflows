@@ -1,0 +1,22 @@
+clustering_script: 
+  class: File
+  path: scripts/clusterization.py
+clustering_techniques: [ "dbscan", "kmeans" ]
+
+download_script: 
+  class: File
+  path: scripts/download.py
+dataset_name: "uciml/iris"
+
+normalization_script: 
+  class: File
+  path: scripts/normalization.py
+normalization_techniques: [ "none", "ln_p1", "ln_pe" ]
+
+reduction_script: 
+  class: File
+  path: scripts/reduction.py
+number_dimensions: 2
+reduction_techniques: [ "none", "pca", "tsne" ]
+
+seed: 42

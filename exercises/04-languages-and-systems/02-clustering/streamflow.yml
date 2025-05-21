@@ -1,0 +1,8 @@
+#!/usr/bin/env streamflow
+version: v1.0
+workflows:
+  master:
+    type: cwl
+    config:
+      file: solution/main.cwl
+      settings: config.yml
