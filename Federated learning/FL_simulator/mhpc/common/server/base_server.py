@@ -25,6 +25,7 @@ class BaseServer(ABC):
         :return: copy of the DNN model
         :rtype: Dict[str, torch.Tensor]
         """
+        pass
 
     @abstractmethod
     def average(self, models: List[nn.Module]) -> None:
