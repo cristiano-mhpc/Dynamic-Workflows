@@ -55,12 +55,14 @@ def main(args):
     reduction_techniques = arguments["reduction_techniques"]
     num_dimensions = arguments["number_dimensions"]
     clustering_techniques = arguments["clustering_techniques"]
-    seed = int(time.time())
+    #seed = int(time.time()) # MARK changed
+    seed = arguments["seed"]
 
     # Set seed for reproducibility
     np.random.seed(seed)
 
-    # Execute the workflow
+    # Execute the workflow.
+    # Currently, the pipeline is not parallelized.
     task = dask.delayed(pipeline)(
         dataset_name=dataset_name,
         norm_techniques=norm_techniques,
@@ -70,6 +72,7 @@ def main(args):
         seed=seed,
     )
 
+    task.visualize(bad.svg)
     # Execute dask tasks
     results = task.compute()
     # Print values
