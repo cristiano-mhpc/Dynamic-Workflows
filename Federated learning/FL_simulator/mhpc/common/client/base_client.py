@@ -25,6 +25,7 @@ class BaseClient(ABC):
         :param model: DNN model assigned to the client
         :type model: Dict[str, torch.Tensor]
         """
+        pass
 
     @abstractmethod
     def get_parameters(self) -> tuple[str, torch.Tensor]:
