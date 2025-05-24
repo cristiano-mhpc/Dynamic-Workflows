@@ -28,7 +28,7 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def get_parameters(self) -> tuple[str, torch.Tensor]:
+    def get_parameters(self) -> Dict[str, torch.Tensor]:
         """Returns the client's model parameters
 
         :return: The client's DNN model

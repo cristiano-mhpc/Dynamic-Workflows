@@ -28,7 +28,7 @@ class BaseServer(ABC):
         pass
 
     @abstractmethod
-    def average(self, models: List[nn.Module]) -> None:
+    def average(self, state_dicts: List[Dict[str, torch.Tensor]]) -> None:
         """Sets the server's model to the average of the clients' models
 
         :param models: List of clients' models
