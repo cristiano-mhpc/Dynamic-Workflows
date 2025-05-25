@@ -1,6 +1,6 @@
 """Simple FL script simulating FedAvg"""
 # This script:
-#     - Instantiates the server anf the client
+#     - Instantiates the server and the client
 #     - prepares the dataset with either IID 
 #     or one-class-per client partitioning
 #     based on the --one-class argument
@@ -12,6 +12,9 @@ import sys
 from typing import List
 import torch
 
+from dask import delayed, compute
+from dask.distributed import Client
+
 from common.models.simple_model import Net
 from common.parser import parser
 from common.utils import load_mnist, set_deterministic_execution
@@ -20,6 +23,21 @@ from common.utils import load_mnist, set_deterministic_execution
 from common.client.fed_avg_client import FedAvgClient
 from common.server.fed_avg_server import FedAvgServer
 
+@delayed
+def train_client(client, epochs):
+    """Parallel training of a clients"""
+    print(f"Training client {client.client_id} for {epochs} epochs...")
+    train_loss = client.train(epochs)
+    params = client.get_parameters()
+    return train_loss, params
+
+@delayed
+def test_client(client):
+    """Parallel testing of a clients"""
+    print(f"Testing client {client.client_id}...")
+    return client.test() 
+
+
 def training(args: argparse.Namespace) -> None:
     """FedAvg training script
 
@@ -27,17 +45,20 @@ def training(args: argparse.Namespace) -> None:
     :type args: argparse.Namespace
     """
 
+    # Launch local Dask cluster (optinal dashboard at localhost:8787)
+    dask_client = Client()
+    print(f"Dask dashboard available at: {dask_client.dashboard_link}")
+
     # Select device
     device = torch.device("cuda" if args.gpu and torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # Reporoducibility
+    # Reproducibility
     generator = None
     if args.seed is not None:
         generator = set_deterministic_execution(args.seed)
 
     print("Creating server...")
-
     # Instantiate server
     server = FedAvgServer(Net(), device=device)
 
@@ -64,20 +85,41 @@ def training(args: argparse.Namespace) -> None:
 
     for i in range(args.rounds):
         print(f"Starting round {i}...")
-        for id, client in enumerate(clients):
-            print(f"Client {id} training...")
-            # Client training
-            train_loss = client.train(args.epochs)
-            print(f"Client {id} finished training with loss: {train_loss:.4f}")
 
-            print(f"Client {id} testing...")
-            # Client testing
-            test_loss = client.test()
-            print(f"Client {id} finished testing with loss: {test_loss[0]:.4f}, accuracy: {test_loss[1]:.2f}%")
+        # Parallel training
+        train_tasks = [train_client(client, args.epochs) for client in clients]
+        train_results = compute(*train_tasks) # execute in parallel
+
+
+        # for id, client in enumerate(clients):
+        #     print(f"Client {id} training...")
+        #     # Client training
+        #     train_loss = client.train(args.epochs)
+        #     print(f"Client {id} finished training with loss: {train_loss:.4f}")
+
+        #     print(f"Client {id} testing...")
+        #     # Client testing
+        #     test_loss = client.test()
+        #     print(f"Client {id} finished testing with loss: {test_loss[0]:.4f}, accuracy: {test_loss[1]:.2f}%")
+        
+        # unpack training results
+        train_losses, client_params = zip(*train_results)
+        for i, loss in enumerate(train_losses):
+            print(f"Client {i} training loss: {loss:.4f}")
+        
+        # Parallel testing
+        test_tasks = [test_client(client) for client in clients]
+        test_results = compute(*test_tasks)
+
+        for i, (loss, acc) in enumerate(test_results):
+             print(f"Client {i} test loss: {loss:.4f}, acc: {acc:.2%}")
+
         print(f"Averaging clients' models...")
         # Clients' models averaging
-        client_params = [client.get_parameters() for client in clients]
+        #client_params = [client.get_parameters() for client in clients]
         server.average(client_params)
+
+        # Sending aggregated model to clients
         for id, client in enumerate(clients):
             print(f"Sending model to client {id}...")
             # Setting aggregated model in clients
