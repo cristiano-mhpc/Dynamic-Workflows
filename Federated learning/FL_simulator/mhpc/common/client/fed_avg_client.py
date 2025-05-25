@@ -70,7 +70,7 @@ class FedAvgClient(BaseClient):
                 loss.backward()
                 self.optimizer.step()
                 total_loss += loss.item()
-        return total_loss / len(self.train_loader)
+        return total_loss / (len(self.train_loader)*epochs)
 
 
     def test(self) -> Tuple[float, float]:

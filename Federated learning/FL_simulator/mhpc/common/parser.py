@@ -89,3 +89,10 @@ parser.add_argument(
     type=float,
     default=0.7,
 )
+
+parser.add_argument(
+        "--sequential",
+        action="store_true",
+        help="Run training and testing in sequential from one client to the next",
+        default=False
+)
