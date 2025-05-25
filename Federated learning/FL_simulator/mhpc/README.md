@@ -82,5 +82,3 @@ The script allows toggling between sequential and parallel execution via the `--
 
 ---
 
-*Author: [Your Name]*  
-*Date: 2025*
