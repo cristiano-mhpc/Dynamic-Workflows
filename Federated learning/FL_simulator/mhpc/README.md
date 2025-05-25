@@ -1,5 +1,5 @@
 
-# Parallelization Strategy in the Federated Learning Script using Dask
+# Parallelization Strategy using Dask
 
 
 ## Goals of Parallelization
