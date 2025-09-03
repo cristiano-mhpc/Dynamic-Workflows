@@ -1,3 +1,2 @@
-# P2.12_24_25
+# Dynamic Workflows in Modern HPC Environments
 
-Official repository for the MHPC course
